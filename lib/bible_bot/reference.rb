@@ -87,6 +87,16 @@ module BibleBot
       "BibleBot::Reference — #{formatted}"
     end
 
+    # Returns true if the given chapter is within the start and end chapter of the Reference.
+    #
+    # @param chapter [Chapter]
+    # @return [Boolean]
+    def includes_chapter?(chapter)
+      return false unless chapter.is_a?(Chapter)
+
+      start_verse.chapter <= chapter && chapter <= end_verse.chapter
+    end
+
     # Returns true if the given verse is within the start and end verse of the Reference.
     #
     # @param verse [Verse]
@@ -104,6 +114,26 @@ module BibleBot
       return false unless other.is_a?(Reference)
 
       start_verse <= other.end_verse && end_verse >= other.start_verse
+    end
+
+    # Returns an array of all the chapters contained in the Reference.
+    #
+    # @return [Array<Chapter>]
+    def chapters
+      return @chapters if defined? @chapters
+
+      @chapters = []
+      return @chapters unless valid?
+
+      chapter = start_verse.chapter
+
+      loop do
+        @chapters << chapter
+        break if end_verse.nil? || chapter == end_verse.chapter
+        chapter = chapter.next_chapter
+      end
+
+      @chapters
     end
 
     # Returns an array of all the verses contained in the Reference.

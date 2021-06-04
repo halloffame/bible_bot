@@ -65,6 +65,20 @@ describe BibleBot::Reference do
     end
   end
 
+  describe "chapters" do
+    [
+      [1_001_001, nil, 1],
+      [1_001_001, 1_001_005, 1],
+      [1_001_001, 1_002_005, 2],
+      [1_001_001, 2_001_001, 51],
+    ].each do |start_verse_id, end_verse_id, expected_chapter_count|
+      describe "start_verse_id=#{start_verse_id} and end_verse_id=#{end_verse_id}" do
+        subject { described_class.from_verse_ids(start_verse_id, end_verse_id).chapters.count }
+        it { is_expected.to eq expected_chapter_count }
+      end
+    end
+  end
+
   describe "verses" do
     [
       [1_001_001, nil, 1],
@@ -79,7 +93,24 @@ describe BibleBot::Reference do
     end
   end
 
-  describe "include_verses?" do
+  describe "includes_chapter?" do
+    [
+      [1_002_010, 2_001_001, 1_001, false],
+      [1_002_010, 2_001_001, 1_002, true],
+      [1_002_010, 2_001_001, 1_034, true],
+      [1_002_010, 2_001_001, 2_001, true],
+      [1_002_010, 2_001_001, 2_002, false],
+      [1_002_010, 2_001_001, nil, false],
+    ].each do |start_verse_id, end_verse_id, included_chapter_id, expect_incuded|
+      describe "start_verse_id=#{start_verse_id}, end_verse_id=#{end_verse_id}, included_chapter_id=#{included_chapter_id}" do
+        let(:reference) { described_class.from_verse_ids(start_verse_id, end_verse_id) }
+        subject { reference.includes_chapter?(Chapter.from_id(included_chapter_id)) }
+        it { is_expected.to eq expect_incuded }
+      end
+    end
+  end
+
+  describe "includes_verse?" do
     [
       [1_001_010, 2_001_001, 1_001_002, false],
       [1_001_010, 2_001_001, 1_001_010, true],

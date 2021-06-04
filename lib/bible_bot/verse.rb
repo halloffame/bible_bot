@@ -4,7 +4,7 @@ module BibleBot
     include Comparable
 
     attr_reader :book # @return [Book]
-    attr_reader :chapter_number # @return [Integer]
+    attr_reader :chapter # @return [Chapter]
     attr_reader :verse_number # @return [Integer]
 
     # Turns an Inteter into a Verse
@@ -30,9 +30,10 @@ module BibleBot
     # @param book [Book]
     # @param chapter_number [Integer]
     # @param verse_number [Integer]
-    def initialize(book:, chapter_number:,  verse_number:)
+    def initialize(book:, chapter_number:, verse_number:)
       @book = book
       @chapter_number = chapter_number
+      @chapter = BibleBot::Chapter.new(book: book, chapter_number: chapter_number)
       @verse_number = verse_number
     end
 
@@ -112,7 +113,12 @@ module BibleBot
 
     # @return [Boolean]
     def last_chapter_in_book?
-      chapter_number == book.chapters.length
+      chapter.last_chapter_in_book?
+    end
+
+    # @return [Integer]
+    def chapter_number
+      chapter.chapter_number
     end
 
     # @return [Hash]
@@ -127,8 +133,10 @@ module BibleBot
     # @return [Boolean]
     def valid?
       book.is_a?(BibleBot::Book) &&
-      chapter_number.is_a?(Integer) && chapter_number >= 1 && chapter_number <= book.chapters.length &&
-      verse_number.is_a?(Integer) && verse_number >= 1 && verse_number <= book.chapters[chapter_number-1]
+        chapter&.valid? &&
+        verse_number.is_a?(Integer) &&
+        verse_number >= 1 &&
+        verse_number <= book.chapters[chapter_number-1]
     end
 
     # Raises error if reference is invalid

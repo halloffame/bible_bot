@@ -2,6 +2,8 @@ module BibleBot
   # Represents one of the 66 books in the bible (Genesis - Revelation).
   # You should never need to initialize a Book, they are initialized in {Bible}.
   class Book
+    include Comparable
+
     attr_reader :id # @return [Integer]
     attr_reader :name # @return [String]
     attr_reader :abbreviation # @return [String]
@@ -23,9 +25,10 @@ module BibleBot
     end
 
     # Find by the Book ID defined in {Bible}.
+    # Returns nil if no book is found.
     #
     # @param id [Integer]
-    # @return [Book]
+    # @return [Book,nil]
     def self.find_by_id(id)
       Bible.books.find { |book| book.id == id }
     end
@@ -37,6 +40,22 @@ module BibleBot
       @regex = regex
       @chapters = chapters
       @testament = testament
+    end
+
+    # The Comparable mixin uses this to define all the other comparable methods
+    #
+    # @param other [Book]
+    # @return [Integer] Either -1, 0, or 1
+    #   * -1: this book is less than the other book
+    #   * 0: this book is equal to the other book
+    #   * 1: this book is greater than the other book
+    def <=>(other)
+      id <=> other.id
+    end
+
+    # @return [String]
+    def to_s
+      name
     end
 
     # @return [String]
@@ -61,12 +80,12 @@ module BibleBot
 
     # @return [Verse]
     def start_verse
-      @first_verse ||= Verse.from_id("#{id}001001".to_i)
+      @start_verse ||= Verse.from_id("#{id}001001".to_i)
     end
 
     # @return [Verse]
     def end_verse
-      @last_verse ||= Verse.from_id(
+      @end_verse ||= Verse.from_id(
         "#{id}#{chapters.length.to_s.rjust(3, '0')}#{chapters.last.to_s.rjust(3, '0')}".to_i
       )
     end
